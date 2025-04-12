@@ -26,6 +26,7 @@ def run_lexer(input_file):
     print("\n--- lexer ---\n")
     with open(input_file, "r") as file:
         index = 0
+        line_number = 1
         # for each line that ends with '\n'
         for line in file:
             # our index is used to keep track of current start of
@@ -42,12 +43,20 @@ def run_lexer(input_file):
                     break
                 # if we have:
                 #   int main(void) {
+                # our first substring will be int main(void) {
+                # the second substring will be main(void) {
                 substring = line[index:]
+                # match() will match from the start of the string up
+                # to the end of the substring
                 match = master_pattern.match(substring)
                 if match is not None:
                     print(match.lastgroup, match.group())
+                    # if we have a match we need to update our index
+                    # to start at the next space or word
                     index+= len(match.group())
                 else:
-                    print("no match found")
+                    print("no match found on line: ", line_number, substring)
                     break
+            line_number+=1
+            # clear out the index for the word
             index = 0
