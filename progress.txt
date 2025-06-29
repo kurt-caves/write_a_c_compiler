@@ -1,0 +1,28 @@
+06/14/25
+
+By running : 
+../writing-a-c-compiler-tests/./test_compiler lexer.py 
+--chapter 1 --stage lex > output.txt 2>&1
+
+and getting 24 errors I am pretty sure that I am on the right track because when I run this:
+
+../writing-a-c-compiler-tests/./test_compiler compiler_
+driver.py --chapter 1 --stage lex > output.txt 2>&1
+
+I only get 19 errors and the tests that are passed are the valid tests
+
+06/15/25
+
+I am moving on assuming that I am correct in thinking that my lexer is working and I am running it correctly against the test_compiler.
+
+I am now working on my parser. I have passed my tokens from the lexer to the parser.
+
+06/24/25
+Got the parser working now working on codegen. To make the assembly file run: $ gcc -S -O -fno-asynchronous-unwind-tables -fcf-protection=none return_2.c
+
+What I need to get my --codegen working
+1) run the lexer get the tokens
+2) pass tokens to parser run parser return AST
+3) pass AST and tokens to codegen
+4) parse through AST and creat the Assembly version of the AST
+5) parse through the Assembly AST and emit assembly

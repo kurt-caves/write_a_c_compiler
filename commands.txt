@@ -1,0 +1,3 @@
+../writing-a-c-compiler-tests/./test_compiler compiler_
+driver.py --chapter 1 --stage lex > output.txt 2>&1 
+
