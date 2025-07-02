@@ -49,7 +49,7 @@ def parse_identifier(current_token, pos):
     # print(current_token.name)
     # we want to increment the pos of the cursor
     pos+=1
-    return (current_token[1],pos)
+    return ('main',pos)
 
 def parse_exp(tokens, pos):
     current_token = peek(tokens, pos)
@@ -80,7 +80,10 @@ def parse_exp(tokens, pos):
  
 def parse_statement(tokens, pos):
     current_token = peek(tokens, pos)
-    # print(f"{current_token.name}")
+    print(f"parse_statement: {current_token[1]}")
+    if current_token[1] == 'SINGLE_COMMENT' or current_token[1] == current_token[1] == 'MULTI_COMMENT':
+        pos+=1
+        current_token = peek(tokens, pos)
     # the only statement we currently support is a RETURN
     if current_token[1] != 'RETURN':
         print(f"missing RETURN, {current_token[1]}")
@@ -99,7 +102,7 @@ def parse_function(tokens):
     body = ''
     # check for int
     current_token = peek(tokens, pos)
-    print(f"!!!!!!!!!!!!!{current_token[1]}")
+    # print(f"!!!!!!!!!!!!!{current_token[1]}")
     if current_token[1] != 'INT':
         print(f"parse_function error on token: {current_token[1]}")
         sys.exit(1)
@@ -168,6 +171,7 @@ def parse_program(tokens):
 
 def run_parser(tokens):
     # print(tokens)
+    # print("parser4.py here")
     program_node = parse_program(tokens)
-    pretty_print_C_AST(program_node)
+    # pretty_print_C_AST(program_node)
     return program_node

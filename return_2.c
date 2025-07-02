@@ -1,3 +1,1 @@
-int main(void) {
-    return 100;
-}
+int main(void) { return 101; }

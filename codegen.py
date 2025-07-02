@@ -139,20 +139,20 @@ def compile_ASFunction(node):
     return ASFunction(name,instructions)
 
 def compile_ASTree(ast_node):
-    print(f"compile_ASTree ast_node: {ast_node}")
-    print("here")
+    # print(f"compile_ASTree ast_node: {ast_node}")
+    # print("here")
     if isinstance(ast_node, CASTProgram):
-        print("here")
+        # print("here")
         AS_node = compile_ASProgram(ast_node)
     return AS_node   
 
 
 def run_codegen(ast, tokens):
     # program_node = parse_program(tokens)
-    print(f"this is the AST!!!! {ast}")
+    # print(f"this is the AST!!!! {ast}")
     ASTree = compile_ASTree(ast)
-    pretty_print_C_AST(ast)
+    # pretty_print_C_AST(ast)
     print()
-    print("--------- Assembly Tree -----------")
-    pretty_print_AS_AST(ASTree)
+    # print("--------- Assembly Tree -----------")
+    # pretty_print_AS_AST(ASTree)
     return ASTree

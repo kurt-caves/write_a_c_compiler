@@ -45,7 +45,7 @@ if flag == '--lex':
     try:
         # tokens = lexer.run_lexer(input_file)
         tokens = lexer2.run_lexer(input_file)
-        print(tokens)
+        # print(tokens)
     except (SyntaxError, LexingError) as e:
         print("Lexer Error:", e)
         sys.exit(1)
@@ -64,7 +64,7 @@ if flag == '--codegen':
         tokens = lexer2.run_lexer(input_file)
         ast = parser4.run_parser(tokens)
         as_tree = codegen.run_codegen(ast, tokens)
-        assembly_maker.run_assembler(as_tree)
+        s_file = assembly_maker.run_assembler(as_tree)
         # print(f"as_tree: {as_tree}")
     except Error as e:
         print("Codegen Error", e)
@@ -83,12 +83,12 @@ except subprocess.CalledProcessError:
     print("Error during pre-processing")
     sys.exit(1)
 
-s_file = base_file + '.s'
+# s_file = base_file + '.s'
 # compile the i file
-i_compile = subprocess.check_call(f"gcc -S {i_file} -o {s_file}", shell=True)
-print("i compile return code: ", i_compile)
-if i_compile != 0:
-    print("issue compiling i file")
+# i_compile = subprocess.check_call(f"gcc -S {i_file} -o {s_file}", shell=True)
+# print("i compile return code: ", i_compile)
+# if i_compile != 0:
+#     print("issue compiling i file")
 
 # assemble and link the assembly file to produce and executable
 assemble_link = subprocess.check_call(f"gcc {s_file} -o {base_file}", shell=True)

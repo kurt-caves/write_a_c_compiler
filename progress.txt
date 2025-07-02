@@ -26,3 +26,42 @@ What I need to get my --codegen working
 3) pass AST and tokens to codegen
 4) parse through AST and creat the Assembly version of the AST
 5) parse through the Assembly AST and emit assembly
+
+
+06/29/25
+	.section	__TEXT,__text,regular,pure_instructions
+	.build_version macos, 15, 0	sdk_version 15, 5
+	.globl	_main                           ; -- Begin function main
+	.p2align	2
+_main:                                  ; @main
+	.cfi_startproc
+; %bb.0:
+	mov	w0, #100                        ; =0x64
+	ret
+	.cfi_endproc
+                                        ; -- End function
+.subsections_via_symbols
+
+
+06/30/25
+Still getting 7 errors when I try to run the tests, it might because I can't compile the s file for x86, may have to try on my new linux laptop when I get it setup. I eneded returning a s file from assembly_maker.py to compiler_driver.py and compiling that file, it works currently.
+
+Moving on to chapter 2.
+
+$ gcc -S -O -fno-asynchronous-unwind-tables -fcf-protection=none return_2.c
+
+output ============>
+
+	.section	__TEXT,__text,regular,pure_instructions
+	.build_version macos, 15, 0	sdk_version 15, 5
+	.globl	_main                           ; -- Begin function main
+	.p2align	2
+_main:                                  ; @main
+	.cfi_startproc
+; %bb.0:
+	mov	w0, #101                        ; =0x65
+	ret
+	.cfi_endproc
+                                        ; -- End function
+.subsections_via_symbols
+

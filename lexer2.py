@@ -73,11 +73,13 @@ def run_lexer(input_file):
             ('GT', r'>'),
             ('PLUS', r'\+'),
             ('IDENTIFIER', r'[a-zA-Z_]\w*\b'),
+            ('SINGLE_COMMENT', r'//.*'),
+            ('MULTI_COMMENT', r'/\*[\s\S]*?\*/')
     ]
 
     with open(input_file) as file:
         code = file.read()
-    print(code)
+    # print(code)
     
     tokens = []
     pos = 0
@@ -117,7 +119,7 @@ def run_lexer(input_file):
             sys.exit(1)
         #pos+=1
 
-    print(f"tokens: {tokens}")
+    # print(f"tokens: {tokens}")
 
     # for token, pattern in token_spec:
     #     # print(f"token: {token}, pattern: {pattern}")
