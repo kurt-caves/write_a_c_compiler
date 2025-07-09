@@ -54,8 +54,8 @@ def run_assembler(as_tree):
     print(f"inside run_assembler {as_tree}")
     output_file = 'return_2.s'
     text = []
-    text = write_arm_assembly(as_tree,text)
-    written_file = print_arm_assembly(text, output_file)
-    # text = write_x86(as_tree,text)
-    # written_file = print_x86(text, output_file)
+    # text = write_arm_assembly(as_tree,text)
+    # written_file = print_arm_assembly(text, output_file)
+    text = write_x86(as_tree,text)
+    written_file = print_x86(text, output_file)
     return written_file

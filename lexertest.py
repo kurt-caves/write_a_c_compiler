@@ -55,8 +55,9 @@ import sys
 # Re.IGNORECASE, re.MULTILINE
 # flags you can pass to modify regex behavior
 
-def run_lexer(input_file):
-    token_spec = [
+
+
+token_spec = [
             ('OPEN_PAREN', r'\('),
             ('CLOSE_PAREN', r'\)'),
             ('SEMICOLON', r';'),
@@ -80,55 +81,54 @@ def run_lexer(input_file):
             ('NEGATION', r'-')
     ]
 
-    with open(input_file) as file:
-        code = file.read()
+    # with open(input_file) as file:
+    #     code = file.read()
     # print(code)
     
-    tokens = []
-    pos = 0
+code = """
+int main(void) {
+    return --2;
+}
+"""
+
+tokens = []
+pos = 0
+matched = False
+# we loop through the code while pos is less than code
+while pos < len(code):
+
     matched = False
-    # we loop through the code while pos is less than code
-    while pos < len(code):
+    # if we see a space move forward a char
+    # and we skip to next cycle of loop
+    # where we will have advanced the pos and started at the
+    # top of the while loop again
+    if code[pos].isspace():
+        pos+=1
+        continue
 
-        matched = False
-        # if we see a space move forward a char
-        # and we skip to next cycle of loop
-        # where we will have advanced the pos and started at the
-        # top of the while loop again
-        if code[pos].isspace():
-            pos+=1
-            continue
-
-        # we iter through the list of tokens for each token and
-        # its pattern
-        for token, pattern in token_spec:
-            # a match is checked at the current position onwards
-            # when it comes to a word boundry it will stop and check 
-            # for a match
-            match = re.match(pattern, code[pos:]) 
-            if match:
-                pattern_match = len(match.group())
-                tokens.append((match.group(), token))
-                # we want to continue forward in the string
-                # so we move forward by each token or pattern length
-                pos+=pattern_match
-                # when we fall out of the for loop which we will
-                # with the break we want to make sure we dont print
-                # a lexical error
-                matched = True
-                break
-        if matched == False:
-            print(f"lexical error: {code[pos:]}")
-            sys.exit(1)
+    # we iter through the list of tokens for each token and
+    # its pattern
+    for token, pattern in token_spec:
+        # a match is checked at the current position onwards
+        # when it comes to a word boundry it will stop and check 
+        # for a match
+        match = re.match(pattern, code[pos:]) 
+        if match:
+            pattern_match = len(match.group())
+            tokens.append((match.group(), token))
+            # we want to continue forward in the string
+            # so we move forward by each token or pattern length
+            pos+=pattern_match
+            # when we fall out of the for loop which we will
+            # with the break we want to make sure we dont print
+            # a lexical error
+            matched = True
+            break
+    if matched == False:
+        print(f"lexical error: {code[pos:]}")
+        sys.exit(1)
         #pos+=1
 
-    print(f"tokens: {tokens}")
+print(f"tokens: {tokens}")
 
-    # for token, pattern in token_spec:
-    #     # print(f"token: {token}, pattern: {pattern}")
-    #     regex = re.compile(pattern)
-    #     # match = re.matchc()
-        
-
-
-    return tokens
+  
