@@ -21,6 +21,10 @@ class CASTConstant(ASTnode):
     def __init__(self, type_token, value):
         self.type_token = type_token
         self.value = value
+class CASTUnary(ASTnode):
+    def __init__(self, operator, exp):
+        self.operator = operator
+        self.exp = exp
 ########### --- C AST --- ##################
 def peek(tokens, pos):
     return tokens[pos]
@@ -51,9 +55,17 @@ def parse_identifier(current_token, pos):
     pos+=1
     return ('main',pos)
 
+def check_void(current_token, pos):
+
+    if current_token[1] == "VOID":
+        print(f"current_token in check_void: {current_token}")
+        pos+=1
+    return pos
+
 def parse_exp(tokens, pos):
     current_token = peek(tokens, pos)
-    # print(f"{current_token.name}")
+    
+    
     if current_token[1] != 'CONSTANT':
         print(f"unsupported expression: {current_token[1]}")
         sys.exit(1)
@@ -77,6 +89,36 @@ def parse_exp(tokens, pos):
 
     constant = CASTConstant(type_token, value)
     return (constant, pos)
+
+def unbury(tokens, pos):
+    current_token = peek(tokens,pos)
+    print(f"in unbury, current_token = {current_token}")
+    while current_token[1] == 'OPEN_PAREN':
+        pos+=1
+        current_token = peek(tokens,pos)
+        if current_token[1] != 'OPEN_PAREN':
+            break
+    return current_token[1]
+
+def parse_exp2(tokens, pos):
+    current_token = peek(tokens,pos)
+    print(f"parse_exp2, current token: {current_token[1]}")
+    # if current token is an int save it
+    if current_token[1] == 'CONSTANT':
+        constant = current_token[0]
+        return CASTConstant(current_token[1],constant)
+    # elseif current token is ~ or -
+    elif current_token[1] == 'TILDE' or current_token[1] == 'DECREMENT' or current_token[1] == 'NEGATION':
+        operator = current_token[0]
+        inner_exp = parse_exp2(tokens, pos+1)
+        return CASTUnary(operator, inner_exp)
+    elif current_token[1] == 'OPEN_PAREN':
+        current_token = unbury(tokens, pos)
+        inner_exp = parse_exp2(tokens, pos+1)
+        return inner_exp
+    
+ 
+
  
 def parse_statement(tokens, pos):
     current_token = peek(tokens, pos)
@@ -92,7 +134,12 @@ def parse_statement(tokens, pos):
     statement = current_token[1]
     # we have processed the return so we increment the pos
     pos+=1
-    expression, pos = parse_exp(tokens, pos)
+    expression = parse_exp2(tokens, pos)
+    # get past the semicolon
+    # expression = operator, inner_exp
+    # print(f"expression: {expression}")
+    print(f"expression: {expression.operator}, {expression.exp}")
+    print("herre")
     tobe_returned =CASTReturn(statement, expression) 
     return tobe_returned, pos 
 
@@ -102,7 +149,6 @@ def parse_function(tokens):
     body = ''
     # check for int
     current_token = peek(tokens, pos)
-    # print(f"!!!!!!!!!!!!!{current_token[1]}")
     if current_token[1] != 'INT':
         print(f"parse_function error on token: {current_token[1]}")
         sys.exit(1)
@@ -115,23 +161,18 @@ def parse_function(tokens):
 
     
     current_token = peek(tokens, pos)
-    # print(current_token.name)
     if current_token[1] != 'OPEN_PAREN':
         print("missing open paren, current token: {current_token[1]}")
         sys.exit(1)
-    # print(f"{current_token.name}")
-
+    
     # check for void
     pos+=1
     current_token = peek(tokens, pos)
-    if current_token[1] != 'VOID':
-        print("missing void, current token: {current_token[1]}")
-        sys.exit(1)
-    # print(f"{current_token.name}")
+    pos = check_void(current_token, pos)
 
     # check for close paren
-    pos+=1
     current_token = peek(tokens,pos)
+    print(f"check for close paren, current_token: {current_token[1]}")
     if current_token[1] != 'CLOSE_PAREN':
         print("missing close paren, current token: {current_token[1]}")
         sys.exit(1)
@@ -157,7 +198,7 @@ def parse_function(tokens):
     current_token = peek(tokens, pos)
     # print(f"{current_token.name}")
     if current_token[1] != 'CLOSE_BRACE':
-        print("missing close brace, current token: {current_token[1]}")
+        print(f"missing close brace, current token: {current_token[1]}")
         sys.exit(1)
 
 
@@ -165,6 +206,7 @@ def parse_function(tokens):
     
 
 def parse_program(tokens):
+    print(f"tokens: {tokens}")
     program_node = parse_function(tokens)
     # return a program node
     return CASTProgram(program_node)

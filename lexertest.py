@@ -78,7 +78,8 @@ token_spec = [
             ('MULTI_COMMENT', r'/\*[\s\S]*?\*/'),
             ('TILDE', r'~'),
             ('DECREMENT', r'--'),
-            ('NEGATION', r'-')
+            ('NEGATION', r'-'),
+            ('SHEBANG', r'!')
     ]
 
     # with open(input_file) as file:
@@ -86,8 +87,8 @@ token_spec = [
     # print(code)
     
 code = """
-int main(void) {
-    return --2;
+int main() {
+    return !5;
 }
 """
 

@@ -1,4 +1,4 @@
   .globl main
 main:
-  movl    $101, %eax
+  movl    $100, %eax
   ret

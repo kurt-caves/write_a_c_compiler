@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import re
 import sys
 
@@ -77,7 +78,8 @@ def run_lexer(input_file):
             ('MULTI_COMMENT', r'/\*[\s\S]*?\*/'),
             ('TILDE', r'~'),
             ('DECREMENT', r'--'),
-            ('NEGATION', r'-')
+            ('NEGATION', r'-'),
+            ('SHEBANG', r'!')
     ]
 
     with open(input_file) as file:
@@ -122,7 +124,7 @@ def run_lexer(input_file):
             sys.exit(1)
         #pos+=1
 
-    print(f"tokens: {tokens}")
+    # print(f"tokens: {tokens}")
 
     # for token, pattern in token_spec:
     #     # print(f"token: {token}, pattern: {pattern}")
