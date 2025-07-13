@@ -18,8 +18,7 @@ class CASTReturn(ASTnode):
         self.expression = expression
 
 class CASTConstant(ASTnode):
-    def __init__(self, type_token, value):
-        self.type_token = type_token
+    def __init__(self, value):
         self.value = value
 class CASTUnary(ASTnode):
     def __init__(self, operator, exp):
@@ -102,20 +101,28 @@ def unbury(tokens, pos):
 
 def parse_exp2(tokens, pos):
     current_token = peek(tokens,pos)
-    print(f"parse_exp2, current token: {current_token[1]}")
+    # print(f"parse_exp2, current token: {current_token[1]}")
     # if current token is an int save it
     if current_token[1] == 'CONSTANT':
-        constant = current_token[0]
-        return CASTConstant(current_token[1],constant)
+        constant = CASTConstant(current_token[0])
+        return (constant, pos+1)
     # elseif current token is ~ or -
-    elif current_token[1] == 'TILDE' or current_token[1] == 'DECREMENT' or current_token[1] == 'NEGATION':
+    elif (
+            current_token[1] == 'TILDE' 
+            or current_token[1] == 'DECREMENT' 
+            or current_token[1] == 'NEGATION' 
+            or current_token[1] == 'SHEBANG'
+        ):
         operator = current_token[0]
-        inner_exp = parse_exp2(tokens, pos+1)
-        return CASTUnary(operator, inner_exp)
+        inner_exp, new_pos = parse_exp2(tokens, pos+1)
+        unary = CASTUnary(operator, inner_exp)
+        return (unary, new_pos)
+        # return CASTUnary(operator, inner_exp)
     elif current_token[1] == 'OPEN_PAREN':
         current_token = unbury(tokens, pos)
-        inner_exp = parse_exp2(tokens, pos+1)
-        return inner_exp
+        inner_exp, new_pos = parse_exp2(tokens, pos+1)
+        return (inner_exp, new_pos)
+        # return inner_exp
     
  
 
@@ -134,12 +141,38 @@ def parse_statement(tokens, pos):
     statement = current_token[1]
     # we have processed the return so we increment the pos
     pos+=1
-    expression = parse_exp2(tokens, pos)
-    # get past the semicolon
-    # expression = operator, inner_exp
-    # print(f"expression: {expression}")
-    print(f"expression: {expression.operator}, {expression.exp}")
-    print("herre")
+
+    # we need to parse what is after the return and get the position
+    # after the expression as well
+    print(f"first pos: {pos}")
+    expression, pos = parse_exp2(tokens, pos)
+    print(f"second pos: {pos}")
+    
+
+    print(f"expression: {expression}")
+    print(f"expresion.exp: {expression.exp}")
+    print(f"expression.operator: {expression.operator}")
+    print(f"expression.exp.operator: {expression.exp.operator}")
+    print(f"expresion.exp.exp.value: {expression.exp.exp.value}")
+
+    # the current token should be the constant
+    # we next need to check for the semicolon
+    # after incrementing pos
+    # pos+=1
+    current_token = peek(tokens, pos)
+    print(f"parse statement current_token {current_token}")
+    
+    # if we have something like this `return -(~2)` we will return from parse expression and
+    # be at a close paren so we advance and grab the current token again
+    if current_token[1] == 'CLOSE_PAREN':
+        print("here")
+        pos+=1
+    current_token = peek(tokens, pos)
+
+    if current_token[1] != 'SEMICOLON':
+        print(f"parse_statement missing semicolon, current token: {current_token[1]}")
+        sys.exit(1)
+
     tobe_returned =CASTReturn(statement, expression) 
     return tobe_returned, pos 
 
