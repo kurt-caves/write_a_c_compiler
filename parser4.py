@@ -28,24 +28,52 @@ class CASTUnary(ASTnode):
 def peek(tokens, pos):
     return tokens[pos]
 
-def pretty_print_C_AST(node):
+# def pretty_print_C_AST(node):
+#     if isinstance(node, CASTProgram):
+#         print(f"Program (")
+#         pretty_print_C_AST(node.function_definition)
+#         print(")")
+#     elif isinstance(node, CASTFunction):
+#         print(f"    Function (")
+#         print(f"        name = {node.name}")
+#         # print(f"        body = {node.body.statement} (")
+#         pretty_print_C_AST(node.body)
+#         print("     )")
+#     elif isinstance(node, CASTConstant):
+#         print(f"            {node.type_token}({node.value})")
+#     elif isinstance(node, CASTReturn):
+#         print(f"        body = {node.statement}")
+#         pretty_print_C_AST(node.expression)
+
+def new_pretty_print_C_AST(node):
     if isinstance(node, CASTProgram):
         print(f"Program (")
-        pretty_print_C_AST(node.function_definition)
+        new_pretty_print_C_AST(node.function_definition)
         print(")")
     elif isinstance(node, CASTFunction):
         print(f"    Function (")
         print(f"        name = {node.name}")
         # print(f"        body = {node.body.statement} (")
-        pretty_print_C_AST(node.body)
+        new_pretty_print_C_AST(node.body)
         print("     )")
-    elif isinstance(node, CASTConstant):
-        print(f"            {node.type_token}({node.value})")
     elif isinstance(node, CASTReturn):
-        print(f"        body = {node.statement}")
-        pretty_print_C_AST(node.expression)
+        print(f"        body = ({node.statement}")
+        new_pretty_print_C_AST(node.expression)
+        print("                 )")
+    elif isinstance(node, CASTUnary):
+        
+        if node.operator == '~' or node.operator == '!':
+            print(f"               Unary(Complement: {node.operator},")
+        else:
+            print(f"               Unary(Negate: {node.operator},") 
+        new_pretty_print_C_AST(node.exp)
+        print("                     )")
+    elif isinstance(node, CASTConstant):
+        print(f"                Constant  ({node.value})")
+
 
 def parse_identifier(current_token, pos):
+
     if current_token[1] != 'MAIN':
         print(f"parse_identifier error on token: {current_token[1]}")
         sys.exit(1)
@@ -149,11 +177,11 @@ def parse_statement(tokens, pos):
     print(f"second pos: {pos}")
     
 
-    print(f"expression: {expression}")
-    print(f"expresion.exp: {expression.exp}")
-    print(f"expression.operator: {expression.operator}")
-    print(f"expression.exp.operator: {expression.exp.operator}")
-    print(f"expresion.exp.exp.value: {expression.exp.exp.value}")
+    # print(f"expression: {expression}")
+    # print(f"expresion.exp: {expression.exp}")
+    # print(f"expression.operator: {expression.operator}")
+    # print(f"expression.exp.operator: {expression.exp.operator}")
+    # print(f"expresion.exp.exp.value: {expression.exp.exp.value}")
 
     # the current token should be the constant
     # we next need to check for the semicolon
@@ -173,7 +201,8 @@ def parse_statement(tokens, pos):
         print(f"parse_statement missing semicolon, current token: {current_token[1]}")
         sys.exit(1)
 
-    tobe_returned =CASTReturn(statement, expression) 
+    tobe_returned = CASTReturn(statement, expression)
+    print(f"tobe_returned: {tobe_returned}")
     return tobe_returned, pos 
 
 def parse_function(tokens):
@@ -224,6 +253,9 @@ def parse_function(tokens):
     pos+=1
     current_token = peek(tokens, pos)
     body, pos = parse_statement(tokens, pos)
+    print(f"body!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: {body}")
+    print(f"return: {body.expression}")
+
 
     # need to check for closing brace, we should be at a
     # semicolon so we increment
@@ -248,5 +280,13 @@ def run_parser(tokens):
     # print(tokens)
     # print("parser4.py here")
     program_node = parse_program(tokens)
-    # pretty_print_C_AST(program_node)
+    new_pretty_print_C_AST(program_node)
+    # print(f"""
+    #       program,
+    #       function_definition: {program_node.function_definition},
+    #       function: {program_node.function_definition.name},
+    #       epxression: {program_node.function_definition.expression}
+    #
+    # """)
+
     return program_node

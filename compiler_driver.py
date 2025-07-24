@@ -13,6 +13,7 @@ import parser3
 import parser4
 import codegen
 import assembly_maker
+import tacky
 # ./compiler_driver return_2.c --lex
 def main():
     # we need there to be a given file to compile
@@ -56,7 +57,8 @@ def main():
         try:
             tokens = lexer2.run_lexer(input_file)
             # change based on file
-            parser4.run_parser(tokens)
+            c_ast = parser4.run_parser(tokens)
+            tacky.run_tacky(c_ast)
             sys.exit(0)
         except Error as e:
             print("Parser Error:", e)
