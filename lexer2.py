@@ -72,14 +72,17 @@ def run_lexer(input_file):
             ('IF', r'if\b'),
             ('LT', r'<'),
             ('GT', r'>'),
-            ('PLUS', r'\+'),
             ('IDENTIFIER', r'[a-zA-Z_]\w*\b'),
             ('SINGLE_COMMENT', r'//.*'),
             ('MULTI_COMMENT', r'/\*[\s\S]*?\*/'),
             ('TILDE', r'~'),
             ('DECREMENT', r'--'),
             ('NEGATION', r'-'),
-            ('SHEBANG', r'!')
+            ('SHEBANG', r'!'),
+            ('ADD', r'\+'),
+            ('MULT', r'\*'),
+            ('DIV', r'\/'),
+            ('REMAINDER', r'\%')
     ]
 
     with open(input_file) as file:

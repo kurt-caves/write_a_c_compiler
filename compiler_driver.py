@@ -14,6 +14,7 @@ import parser4
 import codegen
 import assembly_maker
 import tacky
+import tacky_assembly
 # ./compiler_driver return_2.c --lex
 def main():
     # we need there to be a given file to compile
@@ -46,7 +47,7 @@ def main():
         try:
             # tokens = lexer.run_lexer(input_file)
             tokens = lexer2.run_lexer(input_file)
-            # print(tokens)
+            print(tokens)
             if tokens:
                 sys.exit(0)
         except (SyntaxError, LexingError) as e:
@@ -58,11 +59,25 @@ def main():
             tokens = lexer2.run_lexer(input_file)
             # change based on file
             c_ast = parser4.run_parser(tokens)
-            tacky.run_tacky(c_ast)
+            # tacky.run_tacky(c_ast)
             sys.exit(0)
-        except Error as e:
+        except Exception as e:
             print("Parser Error:", e)
             sys.exit(1)
+
+    elif flag == '--tacky':
+        try:
+            tokens = lexer2.run_lexer(input_file)
+            # change based on file
+            c_ast = parser4.run_parser(tokens)
+            tacky_ast = tacky.run_tacky(c_ast)
+            tacky_assembly.run_tacky_assembly(tacky_ast)
+            sys.exit(0)
+        except Exception as e:
+            print("Parser Error:", e)
+            sys.exit(1)
+
+
 
     elif flag == '--codegen':
         try: 
@@ -72,7 +87,7 @@ def main():
             # s_file = assembly_maker.run_assembler(as_tree)
             # print(f"as_tree: {as_tree}")
             sys.exit(0)
-        except Error as e:
+        except Exception as e:
             print("Codegen Error", e)
             sys.exit(1)
 

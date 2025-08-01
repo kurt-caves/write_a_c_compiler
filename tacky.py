@@ -10,7 +10,8 @@ class TACKYProgram(ASTnode):
         self.function_definition = function_definition
 
 class TACKYFunction(ASTnode):
-    def __init__(self, body):
+    def __init__(self, name,body):
+        self.name = name
         self.body = body
 
 class TACKYReturn(ASTnode):
@@ -76,8 +77,11 @@ def parse_program(node, instructions):
         return TACKYProgram(func_def)
     elif isinstance(node, c_ast.CASTFunction):
         body = parse_program(node.body, instructions)
-        return TACKYFunction(body)
+        name = node.name
+        return TACKYFunction(name, body)
     elif isinstance(node, c_ast.CASTReturn):
+        # instructions are a mutable list that can be passed around and edited
+        # and this list is updated everywhere
         emit_tacky_expr(node.expression, instructions)
         emit_tacky_return(instructions)
         # changes from return TACKYReturn(expression)
@@ -91,6 +95,7 @@ def print_tacky5(node):
         print(f"Program (")
         print_tacky5(node.function_definition)
         print(")")
+########## -- TACKY AST -- ############
     elif isinstance(node, TACKYFunction):
         print(f"    Function ( ")
         for item in node.body:
@@ -108,18 +113,14 @@ def print_tacky5(node):
     
 def c_ast_to_tacky(node):
     if isinstance(node, c_ast.CASTProgram):
-        print(f"castprogram: {node}")
+        # print(f"castprogram: {node}")
         instructions = []
         something = parse_program(node, instructions)
-        # print(f"something: {something}")
-        # print_tacky(something)
-        # print_tacky2(something)
-        # print_tacky3(something)
-        # print_tacky4(something)
-        print_tacky5(something)
+        # print_tacky5(something)
+        return something
 
 
 def run_tacky(c_ast_node):
-    print(f"here c_ast: {c_ast}")
+    # print(f"here c_ast: {c_ast}")
     tacky_ast = c_ast_to_tacky(c_ast_node)
-
+    return tacky_ast

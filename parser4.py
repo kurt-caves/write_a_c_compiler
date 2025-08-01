@@ -24,6 +24,13 @@ class CASTUnary(ASTnode):
     def __init__(self, operator, exp):
         self.operator = operator
         self.exp = exp
+
+class CASTBinary(ASTnode):
+    def __init__(self, binary_op, exp1, exp2):
+        self.binary_op = binary_op
+        self.exp1 = exp1
+        self.exp2 = exp2
+
 ########### --- C AST --- ##################
 def peek(tokens, pos):
     return tokens[pos]
@@ -89,37 +96,37 @@ def check_void(current_token, pos):
         pos+=1
     return pos
 
-def parse_exp(tokens, pos):
-    current_token = peek(tokens, pos)
-    
-    
-    if current_token[1] != 'CONSTANT':
-        print(f"unsupported expression: {current_token[1]}")
-        sys.exit(1)
-    type_token = current_token[1]
-    # now we can check if the constant type is an integer
-    current_token = peek(tokens, pos)
-    # print(f"{current_token.value}")
-    if current_token[0].isdigit == False:
-        print(f"unsupported constant type: {current_token[0]}")
-        sys.exit(1)
-    value = current_token[0]
-    #print(f"integer: {value}")
-    
-    # now we need to make sure there is a semi colon
-    pos+=1
-    current_token = peek(tokens, pos)
-    if current_token[1] != 'SEMICOLON':
-        print("parse_statement missing semicolon, current token: {current_token[1]}")
-        sys.exit(1)
-    # print(f"{current_token.name}")
-
-    constant = CASTConstant(type_token, value)
-    return (constant, pos)
+# def parse_exp(tokens, pos):
+#     current_token = peek(tokens, pos)
+#     
+#     
+#     if current_token[1] != 'CONSTANT':
+#         print(f"unsupported expression: {current_token[1]}")
+#         sys.exit(1)
+#     type_token = current_token[1]
+#     # now we can check if the constant type is an integer
+#     current_token = peek(tokens, pos)
+#     # print(f"{current_token.value}")
+#     if current_token[0].isdigit == False:
+#         print(f"unsupported constant type: {current_token[0]}")
+#         sys.exit(1)
+#     value = current_token[0]
+#     #print(f"integer: {value}")
+#     
+#     # now we need to make sure there is a semi colon
+#     pos+=1
+#     current_token = peek(tokens, pos)
+#     if current_token[1] != 'SEMICOLON':
+#         print("parse_statement missing semicolon, current token: {current_token[1]}")
+#         sys.exit(1)
+#     # print(f"{current_token.name}")
+#
+#     constant = CASTConstant(value)
+#     return (constant, pos)
 
 def unbury(tokens, pos):
     current_token = peek(tokens,pos)
-    print(f"in unbury, current_token = {current_token}")
+    # print(f"in unbury, current_token = {current_token}")
     while current_token[1] == 'OPEN_PAREN':
         pos+=1
         current_token = peek(tokens,pos)
@@ -127,13 +134,16 @@ def unbury(tokens, pos):
             break
     return current_token[1]
 
-def parse_exp2(tokens, pos):
+
+
+def parse_factor(tokens, pos):
     current_token = peek(tokens,pos)
+    print(f"parse_factor, current_token = {current_token}")
     # print(f"parse_exp2, current token: {current_token[1]}")
     # if current token is an int save it
     if current_token[1] == 'CONSTANT':
         constant = CASTConstant(current_token[0])
-        return (constant, pos+1)
+        return constant, pos+1
     # elseif current token is ~ or -
     elif (
             current_token[1] == 'TILDE' 
@@ -142,22 +152,47 @@ def parse_exp2(tokens, pos):
             or current_token[1] == 'SHEBANG'
         ):
         operator = current_token[0]
-        inner_exp, new_pos = parse_exp2(tokens, pos+1)
+        inner_exp, new_pos = parse_factor(tokens, pos+1)
         unary = CASTUnary(operator, inner_exp)
-        return (unary, new_pos)
+        return unary, new_pos
         # return CASTUnary(operator, inner_exp)
     elif current_token[1] == 'OPEN_PAREN':
         current_token = unbury(tokens, pos)
-        inner_exp, new_pos = parse_exp2(tokens, pos+1)
-        return (inner_exp, new_pos)
+        inner_exp, new_pos = parse_factor(tokens,pos+1)
+        return inner_exp, new_pos
         # return inner_exp
+
+def parse_binop(tokens, pos):
+    current_token = peek(tokens, pos)
+    print(f"parse_binop, current_token = {current_token}")
+    if current_token[1] == 'ADD': 
+        return "Add", pos+1
+    elif current_token[1] == 'NEGATION':
+        return "Subtract", pos+1
+    else:
+        raise SyntaxError(f"Expected '+' or '-'")
+
+def parse_exp(tokens, min_prec, pos):
+    print(f"parse_exp, pos = {pos}")
+    left, new_pos = parse_factor(tokens, pos)
+    print(f"parse_exp, left = {left}")
+    current_token = peek(tokens, new_pos)
+    while current_token[1] == "ADD" or current_token == "NEGATION":
+        print(f"parse_exp, current_token = {current_token[0]}")
+        operator, new_pos = parse_binop(tokens, new_pos)
+        right, new_pos = parse_factor(tokens, new_pos)
+        left = CASTBinary(operator, left, right)
+        current_token = peek(tokens, new_pos)
+        print(f"parse_exp, current_token last = {current_token[0]}")
+    return left, pos
+     
     
  
 
  
 def parse_statement(tokens, pos):
     current_token = peek(tokens, pos)
-    print(f"parse_statement: {current_token[1]}")
+    # print(f"parse_statement: {current_token[1]}")
     if current_token[1] == 'SINGLE_COMMENT' or current_token[1] == current_token[1] == 'MULTI_COMMENT':
         pos+=1
         current_token = peek(tokens, pos)
@@ -172,9 +207,12 @@ def parse_statement(tokens, pos):
 
     # we need to parse what is after the return and get the position
     # after the expression as well
-    print(f"first pos: {pos}")
-    expression, pos = parse_exp2(tokens, pos)
-    print(f"second pos: {pos}")
+    # print(f"first pos: {pos}")
+    # expression, pos = parse_exp2(tokens, pos)
+    min_prec = 0
+    expression, pos = parse_exp(tokens, min_prec, pos)
+    # print(f"second pos: {pos}")
+    print(f"parse_statement, expression = {expression}, exp1 = {expression.exp1.value}, exp2 {expression.exp2.value}")
     
 
     # print(f"expression: {expression}")
@@ -188,12 +226,11 @@ def parse_statement(tokens, pos):
     # after incrementing pos
     # pos+=1
     current_token = peek(tokens, pos)
-    print(f"parse statement current_token {current_token}")
+    # print(f"parse statement current_token {current_token}")
     
     # if we have something like this `return -(~2)` we will return from parse expression and
     # be at a close paren so we advance and grab the current token again
     if current_token[1] == 'CLOSE_PAREN':
-        print("here")
         pos+=1
     current_token = peek(tokens, pos)
 
@@ -202,7 +239,7 @@ def parse_statement(tokens, pos):
         sys.exit(1)
 
     tobe_returned = CASTReturn(statement, expression)
-    print(f"tobe_returned: {tobe_returned}")
+    # print(f"tobe_returned: {tobe_returned}")
     return tobe_returned, pos 
 
 def parse_function(tokens):
@@ -234,7 +271,7 @@ def parse_function(tokens):
 
     # check for close paren
     current_token = peek(tokens,pos)
-    print(f"check for close paren, current_token: {current_token[1]}")
+    # print(f"check for close paren, current_token: {current_token[1]}")
     if current_token[1] != 'CLOSE_PAREN':
         print("missing close paren, current token: {current_token[1]}")
         sys.exit(1)
@@ -253,8 +290,8 @@ def parse_function(tokens):
     pos+=1
     current_token = peek(tokens, pos)
     body, pos = parse_statement(tokens, pos)
-    print(f"body!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: {body}")
-    print(f"return: {body.expression}")
+    # print(f"body!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!: {body}")
+    # print(f"return: {body.expression}")
 
 
     # need to check for closing brace, we should be at a
@@ -280,7 +317,7 @@ def run_parser(tokens):
     # print(tokens)
     # print("parser4.py here")
     program_node = parse_program(tokens)
-    new_pretty_print_C_AST(program_node)
+    # new_pretty_print_C_AST(program_node)
     # print(f"""
     #       program,
     #       function_definition: {program_node.function_definition},
